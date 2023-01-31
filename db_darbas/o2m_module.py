@@ -26,7 +26,7 @@ class Uzsakymas(Base):
     data = Column(DateTime)
     statusas = Column(String)
     gaminio_uzsakymai = relationship("GaminioUzsakymas", back_populates="uzsakymas")
-
+    
     def __str__(self):
         return f"ID {self.id}: pirkejas {self.pirkejas.vardas}, data {self.data}, statusas {self.statusas}"
 
@@ -35,13 +35,14 @@ class Gaminys(Base):
     __tablename__ = "gaminys"
     id = Column(Integer, primary_key=True)
     modelis = Column(String)
-    rankenos_medziaga = Column(String)
+    medziaga_id = Column(Integer, ForeignKey("medziaga.id"))
+    medziaga = relationship("Medziaga", back_populates="gaminys")
     geleztes_ilgis_mm = Column(Integer)
     kaina_eurai = Column(Float)
     gaminio_uzsakymai = relationship("GaminioUzsakymas", back_populates="gaminys")
         
     def __str__(self):
-        return f"ID {self.id}: modelis {self.modelis}, rankenos_medziaga {self.rankenos_medziaga}, geleztes_ilgis_mm {self.geleztes_ilgis_mm}, kaina_eurai {self.kaina_eurai}"
+        return f"ID {self.id}: modelis = {self.modelis}, rankenos medziaga = {self.medziaga_id}, geleztes ilgis mm = {self.geleztes_ilgis_mm}, kaina eurai = {self.kaina_eurai}"
         
 
 class GaminioUzsakymas(Base):
@@ -52,9 +53,22 @@ class GaminioUzsakymas(Base):
     gaminys_id = Column(Integer, ForeignKey("gaminys.id"))
     gaminys = relationship("Gaminys", back_populates="gaminio_uzsakymai")
     kiekis = Column(Integer)
+    medziaga_id = Column(Integer, ForeignKey("medziaga.id"))
+    medziaga = relationship("Medziaga", back_populates="gaminio_uzsakymai")
 
     def __str__(self):
-        return f"ID {self.id}: uzsakymo id {self.uzsakymas_id}, gaminys {self.gaminys.modelis}, kiekis {self.kiekis}"
+        return f"ID {self.id}: uzsakymo id {self.uzsakymas_id}, gaminys {self.gaminys.modelis}, kiekis {self.kiekis}, medziagos rusis {self.medziaga_id}"
+
+
+class Medziaga(Base):
+    __tablename__ = "medziaga"
+    id = Column(Integer, primary_key=True)
+    pavadinimas = Column(String)
+    gaminys = relationship("Gaminys", back_populates="medziaga")
+    gaminio_uzsakymai = relationship("GaminioUzsakymas", back_populates="medziaga")
+
+    def __str__(self):
+        return f"ID {self.id}: pavadinimas {self.pavadinimas}"
 
 if __name__ == "__main__":
     Base.metadata.create_all(engine)
